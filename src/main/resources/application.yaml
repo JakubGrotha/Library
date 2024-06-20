@@ -1,0 +1,7 @@
+spring:
+  application.name: library
+  jpa.open-in-view: false
+
+jwt:
+  secret-key: nJf+3KztH8FQ1L0vX7f0ggamKKY8goJyh8u5Tlb6cFc=
+  expiration: 3h
