@@ -4,9 +4,9 @@ import jakarta.validation.constraints.NotBlank
 
 data class AuthenticationRequest(
 
-    @NotBlank
+    @field:NotBlank
     val username: String,
 
-    @NotBlank
+    @field:NotBlank
     val password: String
 )

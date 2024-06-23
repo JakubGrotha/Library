@@ -1,6 +1,5 @@
 package com.example.library.auth
 
-import com.example.library.user.UserService
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
@@ -11,7 +10,6 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/users")
 class AuthenticationController(
-    private val userService: UserService,
     private val authenticationService: AuthenticationService
 ) {
 
