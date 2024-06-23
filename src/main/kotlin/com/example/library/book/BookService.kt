@@ -1,12 +1,18 @@
 package com.example.library.book
 
+import jakarta.validation.Validator
 import org.springframework.stereotype.Service
 
 @Service
 class BookService(
     private val bookRepository: BookRepository,
+    private val validator: Validator
 ) {
     fun addNewBook(request: BookDto): BookEntity {
+        val violations = validator.validate(request)
+        if (violations.isNotEmpty()) {
+            throw InvalidBookRequestException(violations)
+        }
         val bookEntity = BookEntity.fromRequest(request)
         return bookRepository.save(bookEntity)
     }

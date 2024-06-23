@@ -9,6 +9,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import kotlin.test.Test
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.setRemoveAssertJRelatedElementsFromStackTrace
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.Arguments.*
@@ -40,6 +41,22 @@ class BookIntTest : AbstractIntegrationTest() {
         assertThat(savedBooks.first().author).isEqualTo("author")
         assertThat(savedBooks.first().isbn).isEqualTo("isbn")
         assertThat(savedBooks.first().publishedDate).isEqualTo(LocalDate.of(2020, 6, 1))
+    }
+
+    @ParameterizedTest
+    @MethodSource("invalidBookRequests")
+    fun `should NOT add book if request is incorrect`(requestBody: BookDto) {
+        // given
+        val invalidRequestBody = objectMapper.writeValueAsString(requestBody)
+
+        // when & then
+        mockMvc.perform(
+            post("/api/books")
+                .contentType("application/json")
+                .content(invalidRequestBody)
+        )
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(MockMvcResultMatchers.status().isBadRequest)
     }
 
     @Test
@@ -155,16 +172,30 @@ class BookIntTest : AbstractIntegrationTest() {
 
     companion object {
 
+        private val VALID_DATE = LocalDate.of(2020, 1, 1)
+
+        @JvmStatic
+        private fun invalidBookRequests(): List<Arguments> {
+            return listOf(
+                arguments(BookDto("", "author", "isbn", VALID_DATE)),
+                arguments(BookDto(" ", "author", "isbn", VALID_DATE)),
+                arguments(BookDto("title", "", "isbn", VALID_DATE)),
+                arguments(BookDto("title", " ", "isbn", VALID_DATE)),
+                arguments(BookDto("title", "author", "", VALID_DATE)),
+                arguments(BookDto("title", "author", " ", VALID_DATE)),
+            )
+        }
+
         @JvmStatic
         private fun validBooks(): List<Arguments> {
             val date = LocalDate.of(2020, 1, 1)
             return listOf(
-                arguments(BookEntity(null, "keyword", "xyz", "xyz", date)),
-                arguments(BookEntity(null, "xyz", "keyword", "xyz", date)),
-                arguments(BookEntity(null, "xyz", "xyz", "keyword", date)),
-                arguments(BookEntity(null, "keywordxyz", "xyz", "xyz", date)),
-                arguments(BookEntity(null, "xyz", "xyzkeywordxyz", "xyz", date)),
-                arguments(BookEntity(null, "xyz", "xyz", "xyzkeyword", date)),
+                arguments(BookEntity(null, "keyword", "xyz", "xyz", VALID_DATE)),
+                arguments(BookEntity(null, "xyz", "keyword", "xyz", VALID_DATE)),
+                arguments(BookEntity(null, "xyz", "xyz", "keyword", VALID_DATE)),
+                arguments(BookEntity(null, "keywordxyz", "xyz", "xyz", VALID_DATE)),
+                arguments(BookEntity(null, "xyz", "xyzkeywordxyz", "xyz", VALID_DATE)),
+                arguments(BookEntity(null, "xyz", "xyz", "xyzkeyword", VALID_DATE)),
             )
         }
     }
