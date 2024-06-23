@@ -188,7 +188,6 @@ class BookIntTest : AbstractIntegrationTest() {
 
         @JvmStatic
         private fun validBooks(): List<Arguments> {
-            val date = LocalDate.of(2020, 1, 1)
             return listOf(
                 arguments(BookEntity(null, "keyword", "xyz", "xyz", VALID_DATE)),
                 arguments(BookEntity(null, "xyz", "keyword", "xyz", VALID_DATE)),
