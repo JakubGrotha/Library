@@ -63,7 +63,6 @@ class BookIntTest : AbstractIntegrationTest() {
         // given
         val books = getElevenBooks()
         books.forEach { bookRepository.save(BookEntity.fromRequest(it)) }
-        books.removeLast()
 
         // when
         mockMvc.perform(
@@ -84,6 +83,22 @@ class BookIntTest : AbstractIntegrationTest() {
                 MockMvcResultMatchers.jsonPath("$.content[8].title").value("title9"),
                 MockMvcResultMatchers.jsonPath("$.content[9].title").value("title10")
             )
+    }
+
+    @Test
+    fun `should return correct page`() {
+        // given
+        val books = getElevenBooks()
+        books.forEach { bookRepository.save(BookEntity.fromRequest(it)) }
+
+        // when & then
+        mockMvc.perform(
+            get("/api/books?page=1")
+        )
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(MockMvcResultMatchers.status().isOk)
+            .andExpect(MockMvcResultMatchers.jsonPath("$.content.length()").value(1))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].title").value("title11"))
     }
 
     private fun getElevenBooks(): MutableList<BookDto> {
