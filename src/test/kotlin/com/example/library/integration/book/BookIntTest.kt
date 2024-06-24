@@ -9,7 +9,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import kotlin.test.Test
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.setRemoveAssertJRelatedElementsFromStackTrace
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.Arguments.*
@@ -60,13 +59,11 @@ class BookIntTest : AbstractIntegrationTest() {
     }
 
     @Test
-    fun `should get all books`() {
+    fun `should get first book page with 10 elements if no request parameters are present`() {
         // given
-        val book1 = BookDto("title1", "author1", "isbn1", LocalDate.of(1999, 1, 1))
-        val book2 = BookDto("title2", "author2", "isbn2", LocalDate.of(2021, 1, 1))
-        val book3 = BookDto("title3", "author3", "isbn3", LocalDate.of(2000, 1, 1))
-        val books = listOf(book1, book2, book3)
+        val books = getElevenBooks()
         books.forEach { bookRepository.save(BookEntity.fromRequest(it)) }
+        books.removeLast()
 
         // when
         mockMvc.perform(
@@ -74,7 +71,35 @@ class BookIntTest : AbstractIntegrationTest() {
         )
             .andDo(MockMvcResultHandlers.print())
             .andExpect(MockMvcResultMatchers.status().isOk)
-            .andExpect(MockMvcResultMatchers.content().json(objectMapper.writeValueAsString(books)))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.content.length()").value(10))
+            .andExpectAll(
+                MockMvcResultMatchers.jsonPath("$.content[0].title").value("title1"),
+                MockMvcResultMatchers.jsonPath("$.content[1].title").value("title2"),
+                MockMvcResultMatchers.jsonPath("$.content[2].title").value("title3"),
+                MockMvcResultMatchers.jsonPath("$.content[3].title").value("title4"),
+                MockMvcResultMatchers.jsonPath("$.content[4].title").value("title5"),
+                MockMvcResultMatchers.jsonPath("$.content[5].title").value("title6"),
+                MockMvcResultMatchers.jsonPath("$.content[6].title").value("title7"),
+                MockMvcResultMatchers.jsonPath("$.content[7].title").value("title8"),
+                MockMvcResultMatchers.jsonPath("$.content[8].title").value("title9"),
+                MockMvcResultMatchers.jsonPath("$.content[9].title").value("title10")
+            )
+    }
+
+    private fun getElevenBooks(): MutableList<BookDto> {
+        return mutableListOf(
+            BookDto("title1", "author1", "isbn1", LocalDate.of(1999, 1, 1)),
+            BookDto("title2", "author1", "isbn2", LocalDate.of(1999, 1, 1)),
+            BookDto("title3", "author1", "isbn3", LocalDate.of(1999, 1, 1)),
+            BookDto("title4", "author1", "isbn4", LocalDate.of(1999, 1, 1)),
+            BookDto("title5", "author1", "isbn5", LocalDate.of(1999, 1, 1)),
+            BookDto("title6", "author1", "isbn6", LocalDate.of(1999, 1, 1)),
+            BookDto("title7", "author1", "isbn7", LocalDate.of(1999, 1, 1)),
+            BookDto("title8", "author1", "isbn8", LocalDate.of(1999, 1, 1)),
+            BookDto("title9", "author1", "isbn9", LocalDate.of(1999, 1, 1)),
+            BookDto("title10", "author1", "isbn10", LocalDate.of(1999, 1, 1)),
+            BookDto("title11", "author1", "isbn11", LocalDate.of(1999, 1, 1)),
+        )
     }
 
     @Test

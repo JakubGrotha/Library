@@ -1,6 +1,8 @@
 package com.example.library.book
 
 import jakarta.validation.Validator
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 
 @Service
@@ -17,8 +19,8 @@ class BookService(
         return bookRepository.save(bookEntity)
     }
 
-    fun getAllBooks(): List<BookEntity> {
-        return bookRepository.findAll().toList()
+    fun getAllBooks(pageable: Pageable): Page<BookEntity> {
+        return bookRepository.findAll(pageable)
     }
 
     fun getBookById(bookId: Long): BookEntity {

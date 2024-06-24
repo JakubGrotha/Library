@@ -1,6 +1,7 @@
 package com.example.library.book
 
-import jakarta.validation.Valid
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -27,8 +28,12 @@ class BookController(
     }
 
     @GetMapping
-    fun getAllBooks(): List<BookEntity> {
-        return bookService.getAllBooks()
+    fun getBookPage(
+        @RequestParam("page", defaultValue = "0") page: Int,
+        @RequestParam("size", defaultValue = "10") size: Int
+    ): Page<BookEntity> {
+        val pageable = PageRequest.of(page, size)
+        return bookService.getAllBooks(pageable)
     }
 
     @GetMapping("/{id}")
