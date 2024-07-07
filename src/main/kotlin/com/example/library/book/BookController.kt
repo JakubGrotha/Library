@@ -2,6 +2,8 @@ package com.example.library.book
 
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
+import org.springframework.data.web.PageableDefault
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -29,10 +31,8 @@ class BookController(
 
     @GetMapping
     fun getBookPage(
-        @RequestParam("page", defaultValue = "0") page: Int,
-        @RequestParam("size", defaultValue = "10") size: Int
+        @PageableDefault(page = 0, size = 10, sort = ["title", "author", "isbn"]) pageable: Pageable,
     ): Page<BookEntity> {
-        val pageable = PageRequest.of(page, size)
         return bookService.getAllBooks(pageable)
     }
 
@@ -53,7 +53,10 @@ class BookController(
     }
 
     @GetMapping("/search")
-    fun searchBooks(@RequestParam("query") query: String): List<BookEntity> {
-        return bookService.searchBooks(query)
+    fun searchBooks(
+        @RequestParam("query") query: String,
+        @PageableDefault(page = 0, size = 10, sort = ["title", "author", "isbn"]) pageable: Pageable,
+    ): List<BookEntity> {
+        return bookService.searchBooks(query, pageable)
     }
 }

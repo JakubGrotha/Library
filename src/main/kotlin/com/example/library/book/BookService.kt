@@ -36,8 +36,8 @@ class BookService(
         return bookRepository.save(bookEntity)
     }
 
-    fun searchBooks(query: String): List<BookEntity> {
-        return bookRepository.searchBooks(query).toList()
+    fun searchBooks(query: String, pageable: Pageable): List<BookEntity> {
+        return bookRepository.searchBooks(query, pageable).toList()
     }
 
     fun deleteBookById(bookId: Long) {
