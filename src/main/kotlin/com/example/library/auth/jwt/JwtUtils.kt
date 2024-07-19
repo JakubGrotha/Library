@@ -13,7 +13,7 @@ import kotlin.collections.HashMap
 
 @Component
 class JwtUtils(
-    private val jwtConfiguration: JwtConfiguration,
+    private val jwtConfiguration: JwtConfiguration
 ) {
 
     fun extractUsername(token: String): String? {

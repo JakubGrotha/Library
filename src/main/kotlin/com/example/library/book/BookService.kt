@@ -10,6 +10,7 @@ class BookService(
     private val bookRepository: BookRepository,
     private val validator: Validator
 ) {
+
     fun addNewBook(request: BookDto): BookEntity {
         val violations = validator.validate(request)
         if (violations.isNotEmpty()) {

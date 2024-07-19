@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service
 class AuthenticationService(
     private val authenticationManager: AuthenticationManager,
     private val userService: UserService,
-    private val jwtUtils: JwtUtils,
+    private val jwtUtils: JwtUtils
 ) {
 
     fun authenticate(request: AuthenticationRequest): AuthenticationResponse {
