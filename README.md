@@ -47,9 +47,11 @@ Here is an example of a valid request body:
 }
 ```
 
-#### Accessing all books
+#### Accessing book page
 
 If you want to view the data about all books, send a GET request to `/api/books`.
+This endpoint returns book page. By default, the endpoint returns the first page and the page size is set to 10.
+You can add `page` and `size` request parameters to access different pages or change a page size.
 
 #### Accessing a book by id
 

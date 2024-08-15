@@ -11,7 +11,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @RestControllerAdvice
 class BookExceptionHandler : ResponseEntityExceptionHandler() {
 
-    @ExceptionHandler(value = [BookNotFoundException::class])
+    @ExceptionHandler(value = [BookNotFoundException::class, InvalidBookRequestException::class])
     fun handleException(ex: RuntimeException, request: WebRequest): ResponseEntity<Any>? {
         val responseBody = ex.message
         return handleExceptionInternal(ex, responseBody, HttpHeaders(), HttpStatus.BAD_REQUEST, request)

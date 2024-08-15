@@ -6,7 +6,6 @@ import io.jsonwebtoken.io.Decoders
 import io.jsonwebtoken.security.Keys
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Component
-import java.time.Clock
 import java.util.*
 import java.util.function.Function
 import javax.crypto.SecretKey
@@ -14,7 +13,7 @@ import kotlin.collections.HashMap
 
 @Component
 class JwtUtils(
-    private val jwtConfiguration: JwtConfiguration,
+    private val jwtConfiguration: JwtConfiguration
 ) {
 
     fun extractUsername(token: String): String? {

@@ -42,13 +42,26 @@ class BookIntTest : AbstractIntegrationTest() {
         assertThat(savedBooks.first().publishedDate).isEqualTo(LocalDate.of(2020, 6, 1))
     }
 
-    @Test
-    fun `should get all books`() {
+    @ParameterizedTest
+    @MethodSource("invalidBookRequests")
+    fun `should NOT add book if request is incorrect`(requestBody: BookDto) {
         // given
-        val book1 = BookDto("title1", "author1", "isbn1", LocalDate.of(1999, 1, 1))
-        val book2 = BookDto("title2", "author2", "isbn2", LocalDate.of(2021, 1, 1))
-        val book3 = BookDto("title3", "author3", "isbn3", LocalDate.of(2000, 1, 1))
-        val books = listOf(book1, book2, book3)
+        val invalidRequestBody = objectMapper.writeValueAsString(requestBody)
+
+        // when & then
+        mockMvc.perform(
+            post("/api/books")
+                .contentType("application/json")
+                .content(invalidRequestBody)
+        )
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(MockMvcResultMatchers.status().isBadRequest)
+    }
+
+    @Test
+    fun `should get first book page with 10 elements if no request parameters are present`() {
+        // given
+        val books = getElevenBooks()
         books.forEach { bookRepository.save(BookEntity.fromRequest(it)) }
 
         // when
@@ -57,7 +70,55 @@ class BookIntTest : AbstractIntegrationTest() {
         )
             .andDo(MockMvcResultHandlers.print())
             .andExpect(MockMvcResultMatchers.status().isOk)
-            .andExpect(MockMvcResultMatchers.content().json(objectMapper.writeValueAsString(books)))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.content.length()").value(10))
+            .andExpectAll(
+                MockMvcResultMatchers.jsonPath("$.content[0].title").value("titleA"),
+                MockMvcResultMatchers.jsonPath("$.content[1].title").value("titleB"),
+                MockMvcResultMatchers.jsonPath("$.content[2].title").value("titleC"),
+                MockMvcResultMatchers.jsonPath("$.content[3].title").value("titleD"),
+                MockMvcResultMatchers.jsonPath("$.content[4].title").value("titleE"),
+                MockMvcResultMatchers.jsonPath("$.content[5].title").value("titleF"),
+                MockMvcResultMatchers.jsonPath("$.content[6].title").value("titleG"),
+                MockMvcResultMatchers.jsonPath("$.content[7].title").value("titleH"),
+                MockMvcResultMatchers.jsonPath("$.content[8].title").value("titleI"),
+                MockMvcResultMatchers.jsonPath("$.content[9].title").value("titleJ"),
+            )
+    }
+
+    @Test
+    fun `should return correct page`() {
+        // given
+        val books = getElevenBooks()
+        books.forEach { bookRepository.save(BookEntity.fromRequest(it)) }
+
+        // when & then
+        mockMvc.perform(
+            get("/api/books?page=1&size=5")
+        )
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(MockMvcResultMatchers.status().isOk)
+            .andExpect(MockMvcResultMatchers.jsonPath("$.content.length()").value(5))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].title").value("titleF"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.content[1].title").value("titleG"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.content[2].title").value("titleH"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.content[3].title").value("titleI"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.content[4].title").value("titleJ"))
+    }
+
+    private fun getElevenBooks(): MutableList<BookDto> {
+        return mutableListOf(
+            BookDto("titleA", "author1", "isbn1", LocalDate.of(1999, 1, 1)),
+            BookDto("titleB", "author1", "isbn2", LocalDate.of(1999, 1, 1)),
+            BookDto("titleC", "author1", "isbn3", LocalDate.of(1999, 1, 1)),
+            BookDto("titleD", "author1", "isbn4", LocalDate.of(1999, 1, 1)),
+            BookDto("titleE", "author1", "isbn5", LocalDate.of(1999, 1, 1)),
+            BookDto("titleF", "author1", "isbn6", LocalDate.of(1999, 1, 1)),
+            BookDto("titleG", "author1", "isbn7", LocalDate.of(1999, 1, 1)),
+            BookDto("titleH", "author1", "isbn8", LocalDate.of(1999, 1, 1)),
+            BookDto("titleI", "author1", "isbn9", LocalDate.of(1999, 1, 1)),
+            BookDto("titleJ", "author1", "isbn9", LocalDate.of(1999, 1, 1)),
+            BookDto("titleK", "author1", "isbn9", LocalDate.of(1999, 1, 1)),
+        )
     }
 
     @Test
@@ -155,16 +216,29 @@ class BookIntTest : AbstractIntegrationTest() {
 
     companion object {
 
+        private val VALID_DATE = LocalDate.of(2020, 1, 1)
+
+        @JvmStatic
+        private fun invalidBookRequests(): List<Arguments> {
+            return listOf(
+                arguments(BookDto("", "author", "isbn", VALID_DATE)),
+                arguments(BookDto(" ", "author", "isbn", VALID_DATE)),
+                arguments(BookDto("title", "", "isbn", VALID_DATE)),
+                arguments(BookDto("title", " ", "isbn", VALID_DATE)),
+                arguments(BookDto("title", "author", "", VALID_DATE)),
+                arguments(BookDto("title", "author", " ", VALID_DATE)),
+            )
+        }
+
         @JvmStatic
         private fun validBooks(): List<Arguments> {
-            val date = LocalDate.of(2020, 1, 1)
             return listOf(
-                arguments(BookEntity(null, "keyword", "xyz", "xyz", date)),
-                arguments(BookEntity(null, "xyz", "keyword", "xyz", date)),
-                arguments(BookEntity(null, "xyz", "xyz", "keyword", date)),
-                arguments(BookEntity(null, "keywordxyz", "xyz", "xyz", date)),
-                arguments(BookEntity(null, "xyz", "xyzkeywordxyz", "xyz", date)),
-                arguments(BookEntity(null, "xyz", "xyz", "xyzkeyword", date)),
+                arguments(BookEntity(null, "keyword", "xyz", "xyz", VALID_DATE)),
+                arguments(BookEntity(null, "xyz", "keyword", "xyz", VALID_DATE)),
+                arguments(BookEntity(null, "xyz", "xyz", "keyword", VALID_DATE)),
+                arguments(BookEntity(null, "keywordxyz", "xyz", "xyz", VALID_DATE)),
+                arguments(BookEntity(null, "xyz", "xyzkeywordxyz", "xyz", VALID_DATE)),
+                arguments(BookEntity(null, "xyz", "xyz", "xyzkeyword", VALID_DATE)),
             )
         }
     }

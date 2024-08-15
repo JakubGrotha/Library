@@ -1,5 +1,8 @@
 package com.example.library.book
 
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.data.web.PageableDefault
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -16,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/books")
 class BookController(
-    private val bookService: BookService,
+    private val bookService: BookService
 ) {
 
     @PostMapping
@@ -26,8 +29,10 @@ class BookController(
     }
 
     @GetMapping
-    fun getAllBooks(): List<BookEntity> {
-        return bookService.getAllBooks()
+    fun getBookPage(
+        @PageableDefault(page = 0, size = 10, sort = ["title", "author", "isbn"]) pageable: Pageable,
+    ): Page<BookEntity> {
+        return bookService.getAllBooks(pageable)
     }
 
     @GetMapping("/{id}")
@@ -47,7 +52,10 @@ class BookController(
     }
 
     @GetMapping("/search")
-    fun searchBooks(@RequestParam("query") query: String): List<BookEntity> {
-        return bookService.searchBooks(query)
+    fun searchBooks(
+        @RequestParam("query") query: String,
+        @PageableDefault(page = 0, size = 10, sort = ["title", "author", "isbn"]) pageable: Pageable,
+    ): List<BookEntity> {
+        return bookService.searchBooks(query, pageable)
     }
 }
