@@ -1,5 +1,6 @@
 package com.example.library.book
 
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/books")
+@Tag(name = "books")
 class BookController(
     private val bookService: BookService
 ) {
@@ -57,5 +59,13 @@ class BookController(
         @PageableDefault(page = 0, size = 10, sort = ["title", "author", "isbn"]) pageable: Pageable,
     ): List<BookEntity> {
         return bookService.searchBooks(query, pageable)
+    }
+
+    @GetMapping("/full-text-search")
+    fun getBooksContainingKeyword(
+        @RequestParam("keyword") keyword: String,
+        @PageableDefault(page = 0, size = 10) pageable: Pageable
+    ) : Page<BookEntity> {
+        return bookService.getBooksContainingKeyword(keyword, pageable)
     }
 }

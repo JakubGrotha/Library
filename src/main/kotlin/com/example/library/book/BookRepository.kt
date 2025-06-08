@@ -120,4 +120,23 @@ class BookRepository(private val jdbcClient: JdbcClient) {
             .list()
         return PageImpl(result)
     }
+
+    fun findBookContainingKeyword(keyword: String, pageable: Pageable): Page<BookEntity> {
+        val sql = """
+            SELECT * FROM books
+            WHERE full_text_search @@ to_tsquery(:keyword)
+            LIMIT :limit
+            OFFSET :offset
+            """.trimIndent()
+        val params = mapOf(
+            "keyword" to keyword,
+            "limit" to pageable.pageSize,
+            "offset" to pageable.pageNumber * pageable.pageSize
+        )
+        val result = jdbcClient.sql(sql)
+            .params(params)
+            .query(BookEntity::class.java)
+            .list()
+        return PageImpl(result)
+    }
 }

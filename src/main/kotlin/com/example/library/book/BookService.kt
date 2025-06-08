@@ -44,4 +44,9 @@ class BookService(
     fun deleteBookById(bookId: Long) {
         return bookRepository.deleteById(bookId)
     }
+
+    fun getBooksContainingKeyword(keyword: String, pageable: Pageable): Page<BookEntity> {
+        return bookRepository.findBookContainingKeyword(keyword, pageable)
+
+    }
 }

@@ -13,10 +13,10 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.Arguments.*
 import org.junit.jupiter.params.provider.MethodSource
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import java.time.LocalDate
-import kotlin.math.exp
 
 @SpringBootTest
 @AutoConfigureMockMvc(addFilters = false)
@@ -188,6 +188,25 @@ class BookIntTest : AbstractIntegrationTest() {
             .andExpect(MockMvcResultMatchers.content().json(objectMapper.writeValueAsString(listOf(expected))))
     }
 
+    @ParameterizedTest
+    @MethodSource("shouldFindBooksContainingKeyword")
+    fun `should find books containing keyword`(book: BookEntity) {
+        // given
+        val randomBook = BookEntity(null, "random", "random", "random", LocalDate.of(2020, 1, 1))
+        bookRepository.save(randomBook)
+        val expected = bookRepository.save(book)
+        val keyword = "keyword"
+
+        // when & then
+        mockMvc.perform(
+            get("/api/books/full-text-search")
+                .param("keyword", keyword)
+        )
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(MockMvcResultMatchers.status().isOk)
+            .andExpect(MockMvcResultMatchers.content().json(objectMapper.writeValueAsString(PageImpl(listOf(expected)))))
+    }
+
     @Test
     fun `should NOT edit book if it doesn't exist`() {
         // given
@@ -241,6 +260,15 @@ class BookIntTest : AbstractIntegrationTest() {
                 arguments(BookEntity(null, "keywordxyz", "xyz", "xyz", VALID_DATE)),
                 arguments(BookEntity(null, "xyz", "xyzkeywordxyz", "xyz", VALID_DATE)),
                 arguments(BookEntity(null, "xyz", "xyz", "xyzkeyword", VALID_DATE)),
+            )
+        }
+
+        @JvmStatic
+        private fun shouldFindBooksContainingKeyword(): List<Arguments> {
+            return listOf(
+                arguments(BookEntity(null, "xyz keyword", "xyz", "xyz", VALID_DATE)),
+                arguments(BookEntity(null, "xyz", "keyword xyz", "xyz", VALID_DATE)),
+                arguments(BookEntity(null, "xyz", "xyz", "xyz keyword xyz", VALID_DATE)),
             )
         }
     }

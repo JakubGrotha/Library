@@ -6,14 +6,16 @@ import io.jsonwebtoken.io.Decoders
 import io.jsonwebtoken.security.Keys
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Component
+import java.time.Clock
+import java.time.Instant
 import java.util.*
 import java.util.function.Function
 import javax.crypto.SecretKey
-import kotlin.collections.HashMap
 
 @Component
 class JwtUtils(
-    private val jwtConfiguration: JwtConfiguration
+    private val jwtConfiguration: JwtConfiguration,
+    private val clock: Clock,
 ) {
 
     fun extractUsername(token: String): String? {
@@ -30,7 +32,9 @@ class JwtUtils(
     }
 
     private fun isTokenExpired(token: String): Boolean {
-        return extractExpiration(token).before(Date(System.currentTimeMillis()))
+        val expirationTimestamp = extractExpiration(token).toInstant()
+        val now = Instant.now(clock)
+        return now.isAfter(expirationTimestamp)
     }
 
     private fun extractExpiration(token: String): Date {
@@ -38,11 +42,12 @@ class JwtUtils(
     }
 
     private fun generateToken(extraClaims: Map<String, Any>, userDetails: UserDetails): String {
+        val now = Instant.now(clock)
         return Jwts.builder()
             .claims(extraClaims)
             .subject(userDetails.username)
-            .issuedAt(Date(System.currentTimeMillis()))
-            .expiration(Date(System.currentTimeMillis() + jwtConfiguration.expiration.toMillis()))
+            .issuedAt(Date.from(now))
+            .expiration(Date.from(now.plus(jwtConfiguration.expiration)))
             .signWith(getSigningKey())
             .compact()
     }
@@ -53,7 +58,9 @@ class JwtUtils(
     }
 
     private fun extractAllClaims(token: String): Claims {
+        val jwtClock: io.jsonwebtoken.Clock = io.jsonwebtoken.Clock { Date.from(clock.instant()) }
         return Jwts.parser()
+            .clock(jwtClock)
             .verifyWith(getSigningKey())
             .build()
             .parseSignedClaims(token)

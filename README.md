@@ -85,3 +85,10 @@ where {query} is the query that will be used to filter the books.
 An example of a valid url: `/api/books/search?query=pride` containing the required parameter
 
 All books that contain the query in their title, author or isbn will be returned.
+
+#### Filtering books using full text search
+
+You can perform a full text search on the books and find books that contain a specified keyword at `api/books/full-text-search`,
+where {keyword} is the keyword that will be used for the full text search.
+
+An example of a valid url: `/api/books/full-text-search?keyword=pride` containing the required parameter
